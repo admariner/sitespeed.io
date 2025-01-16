@@ -26,11 +26,15 @@ block content
         tr 
           td Emulated mobile
           td Yes
+      if hostname
+         tr
+          td Hostname
+          td #{hostname}
       if cpuBenchmark
         tr
           td CPU benchmark
           td #{cpuBenchmark} (first run)
-      if options.replay
+      if options.replay || options.webpagereplay
         tr
           td Using WebPageReplay 
           td Yes
@@ -64,6 +68,10 @@ block content
           tr 
             td Phone model
             td #{android.model}
+        if android.id
+          tr
+            td Id
+            td #{android.id}
         if android.androidVersion
           tr 
             td Android version

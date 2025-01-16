@@ -1,8 +1,8 @@
-const Feed = require('feed').Feed;
-const fs = require('fs');
-const path = require('path');
-const parseChangelog = require('changelog-parser');
-const { marked } = require('marked');
+import { Feed } from 'feed';
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import parseChangelog from 'changelog-parser';
+import { marked } from 'marked';
 
 const allFeeds = [];
 
@@ -11,6 +11,8 @@ const images = {
   browsertime: 'https://www.sitespeed.io/img/logos/browsertime.png',
   'coach-core': 'https://www.sitespeed.io/img/logos/coach.png',
   pagexray: 'https://www.sitespeed.io/img/logos/pagexray.png',
+  server: '',
+  testrunner: '',
   throttle: '',
   coach: 'https://www.sitespeed.io/img/logos/coach.png',
   'chrome-har': '',
@@ -20,14 +22,14 @@ const images = {
 };
 
 const getSortedFiles = dir => {
-  const files = fs.readdirSync(dir);
+  const files = readdirSync(dir);
 
   return files
     .map(fileName => ({
       fileName: fileName,
       name: path.parse(fileName).name,
-      time: fs.statSync(`${dir}/${fileName}`).mtime.getTime(),
-      version: fs.readFileSync(`${dir}/${fileName}`, 'utf8').trim()
+      time: statSync(`${dir}/${fileName}`).mtime.getTime(),
+      version: readFileSync(`${dir}/${fileName}`, 'utf8').trim()
     }))
     .sort((a, b) => b.time - a.time);
 };
@@ -135,18 +137,21 @@ function getResultAsHTML(result) {
 
 const getContent = async tool => {
   const content = [];
-  const changelog =
+  let changelog =
     tool === 'sitespeed.io' ? './CHANGELOG.md' : '../' + tool + '/CHANGELOG.md';
+  if (tool === 'server' || tool === 'testrunner') {
+    changelog = `../onlinetest/${tool}/CHANGELOG.md`;
+  }
   const result = await parseChangelog({
     filePath: changelog,
     removeMarkdown: false
   });
 
-  for (let i = 0; i < 10; i++) {
+  for (let index = 0; index < 10; index++) {
     // It's not unreleased
-    if (result.versions[i] && result.versions[i].date !== null) {
-      content.push(result.versions[i]);
-      allFeeds.push({ tool, item: result.versions[i] });
+    if (result.versions[index] && result.versions[index].date !== null) {
+      content.push(result.versions[index]);
+      allFeeds.push({ tool, item: result.versions[index] });
     }
   }
   return content;
@@ -163,14 +168,14 @@ async function generateFeed() {
       addItemToFeed(feed, item, tool.name);
     }
 
-    const docPath = './docs/';
+    const documentPath = './docs/';
 
-    fs.writeFileSync(
-      path.join(docPath, 'feed', `${tool.name}.rss`),
+    writeFileSync(
+      path.join(documentPath, 'feed', `${tool.name}.rss`),
       feed.rss2()
     );
-    fs.writeFileSync(
-      path.join(docPath, 'feed', `${tool.name}.atom`),
+    writeFileSync(
+      path.join(documentPath, 'feed', `${tool.name}.atom`),
       feed.atom1()
     );
   }
@@ -184,10 +189,10 @@ async function generateFeed() {
     addItemToFeed(allFeed, item.item, item.tool);
   }
 
-  const docPath = './docs/';
+  const documentPath = './docs/';
 
-  fs.writeFileSync(path.join(docPath, 'feed', `rss.xml`), allFeed.rss2());
-  fs.writeFileSync(path.join(docPath, 'feed', `atom.xml`), allFeed.atom1());
+  writeFileSync(path.join(documentPath, 'feed', `rss.xml`), allFeed.rss2());
+  writeFileSync(path.join(documentPath, 'feed', `atom.xml`), allFeed.atom1());
 }
 
-generateFeed();
+await generateFeed();
