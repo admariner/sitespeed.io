@@ -21,6 +21,32 @@ if timings.largestContentfulPaint
               td 
                 b Render time 
               td #{h.time.ms(timings.largestContentfulPaint.renderTime)}
+            tr
+              td 
+                b Element render delay
+              td #{h.time.ms(timings.largestContentfulPaint.elementRenderDelay)}
+            tr
+              td 
+                b TTFB
+              td #{h.time.ms(timings.largestContentfulPaint.ttfb)}
+            tr
+              td 
+                b Resource delay
+              td #{h.time.ms(timings.largestContentfulPaint.resourceLoadDelay)}
+            tr
+              td 
+                b Resource load duration
+              td #{h.time.ms(timings.largestContentfulPaint.resourceLoadDuration)}
+            if renderBlocking && renderBlocking.recalculateStyle.beforeLCP
+              tr 
+                td
+                  b Elements that needed recalculate style before LCP
+                td #{renderBlocking.recalculateStyle.beforeLCP.elements}    
+              tr
+                td 
+                  b Time spent in recalculate style before LCP
+                td #{h.time.ms(renderBlocking.recalculateStyle.beforeLCP.durationInMillis)}  
+
             if timings.largestContentfulPaint.id !== ''
               tr 
                 td 
@@ -48,7 +74,7 @@ if timings.largestContentfulPaint
               td.url.pagesurl(colspan='2')
                 #{timings.largestContentfulPaint.domPath}
     .one-half.column
-      - const screenshotNo = medianRun ? medianRun.runIndex : 1
+      - const screenshotNo = medianRun ? medianRun.runIndex : (Number(runIndex) + 1)
       - const screenshotName = 'data/screenshots/' + screenshotNo + '/largestContentfulPaint.' + screenShotType
       a(href=screenshotName)
         img.screenshot(src=screenshotName, alt='LCP', style='max-width:100%; height: auto')

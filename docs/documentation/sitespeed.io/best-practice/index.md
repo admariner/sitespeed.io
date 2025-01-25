@@ -16,7 +16,7 @@ twitterdescription:
 * Lets place the TOC here
 {:toc}
 
-Here we keep questions that are frequently asked at [Slack](https://sitespeedio.herokuapp.com/) or at [GitHub](https://github.com/sitespeedio/sitespeed.io/issues/new).
+Here we keep questions that are frequently asked at [Slack](https://join.slack.com/t/sitespeedio/shared_invite/zt-296jzr7qs-d6DId2KpEnMPJSQ8_R~WFw) or at [GitHub](https://github.com/sitespeedio/sitespeed.io/issues/new).
 
 ## Running tests
 Read this before you start to collect metrics.
@@ -91,7 +91,7 @@ If you use the <code>--preScript</code> or <code>--multi</code> feature, it is t
 ### My pre/post/scripting script doesn't work?
 We use Selenium pre/post script navigation. You can [read more](/documentation/sitespeed.io/prepostscript/) about of our pre/post script setup and focus on the [debug section](/documentation/sitespeed.io/prepostscript/#debuglog-from-your-script) if you have any problem.
 
-If you have problem with Selenium (getting the right element etc), PLEASE do not create issues in sitespeed.io. Head over to the [Selenium community](https://docs.seleniumhq.org/) and they can help you.
+If you have problem with Selenium (getting the right element etc), PLEASE do not create issues in sitespeed.io. Head over to the [Selenium community](https://www.selenium.dev/support/) and they can help you.
 
 ### How do you pass HTML/JavaScript as a CLI parameter?
 The easiest way to pass HTML to the CLI is to pass on the whole message as a String (use a quotation mark to start and end the String) and then do not use quotation marks inside the HTML.
@@ -128,6 +128,18 @@ You can also use the <code>--urlAlias</code> if you want to give the page a frie
 ~~~bash
 docker run --rm -v "$(pwd):/sitespeed.io" sitespeedio/sitespeed.io:{% include version/sitespeed.io.txt %} --useHash --urlAlias super --urlAlias duper https://www.sitespeed.io/#/super https://www.sitespeed.io/#/duper
 ~~~
+
+### How do I test single point of failure (SPOF)?
+
+You can use the dommain unreachable.sitespeed.io that you can connect to but it will be really slow.
+
+For example, you have a web site that load assets from cdn1.readspeaker.com inside of the head tag and you want to test what happens if that domain is really slow. You can do that using Chrome and add this argument.
+
+~~~bash
+--chrome.args='--host-resolver-rules=MAP cdn1.readspeaker.com unreachable.sitespeed.io'
+~~~
+
+That will make all requests that uses cdn1.readspeaker.com instead access unreachable.sitespeed.io that will slow down everything.
 
 
 ### Running tests from multiple locations
@@ -213,3 +225,22 @@ And a couple of generic things that will make your metrics differ:
  * **Connectivity matters** -  You need to set the connectivity.
  * **CPU matters** -  Running the same tests with the same tool on different machines will give different results.
  * **Your page matters** - It could happen that your page has different sweat spots on connectivity (that makes the page render faster) so even a small change, will make the page much slower (we have that scenario on Wikipedia).
+
+
+## Difference in metrics between sitespeed.io https://pagespeed.web.dev
+
+When analyzing web performance data, it's important to understand the source and context of the metrics. The data from the Chrome User Experience Report represents metrics collected by Chrome from users who *"consented"* to share their browsing data. This report reflects the 75th percentile of user experiences, meaning that for the given metric, 75% of the sampled users experienced that performance level or better. For instance, in the example below, 75% of users had a Largest Contentful Paint (LCP) faster than 1.4 seconds, across various devices and network conditions.
+
+![webdev](https://github.com/sitespeedio/sitespeed.io/assets/540757/aacf206a-24d4-4537-8d57-ebf055d58774)
+{: .img-thumbnail}
+
+Is this data useful? Absolutely, especially if you don’t have your own real user monitoring (RUM) metrics. However, it's important to note that this data is limited to Chrome users who agreed to data collection, potentially skewing the metrics if your audience uses a broader range of browsers like Safari, Edge, or Firefox.
+
+To optimize your sitespeed.io tests, use these insights to mirror the experiences of the 75th percentile of your user base. For example, you can adjust network throttling in sitespeed.io to match the Time to First Byte (TTFB) reported in the Chrome data. Then, compare First Contentful Paint (FCP) and LCP metrics. If they don't align, consider adjusting CPU throttling, or better yet, test on actual mobile devices. More information on CPU benchmarking for testing, such as with Wikipedia, can be found [here](https://www.sitespeed.io/documentation/sitespeed.io/cpu-benchmark/).
+
+sitespeed.io even offers a [Chrome User Experience Report plugin](https://www.sitespeed.io/documentation/sitespeed.io/crux/) that lets you directly pull this data from Google for comparison with your sitespeed.io results.
+
+In summary, consider this approach:
+
+1. If you have your own RUM metrics, use them to calibrate your sitespeed.io tests.
+2. If not, leverage the Chrome User Experience data, keeping in mind its potential limitations, to guide your testing and optimization efforts.

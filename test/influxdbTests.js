@@ -1,8 +1,7 @@
-'use strict';
+import dayjs from 'dayjs';
+import test from 'ava';
 
-const DataGenerator = require('../lib/plugins/influxdb/data-generator');
-const dayjs = require('dayjs');
-const test = require('ava');
+import { InfluxDBDataGenerator as DataGenerator } from '../lib/plugins/influxdb/data-generator.js';
 
 test(`Test influxdb dataGenerator`, t => {
   const message = {
@@ -356,5 +355,5 @@ test(`Test influxdb dataGenerator`, t => {
   const seriesName = data[0].seriesName;
   const numberOfTags = Object.keys(data[0].tags).length;
   t.is(seriesName, 'score');
-  t.is(numberOfTags, 7);
+  t.is(numberOfTags, 6);
 });

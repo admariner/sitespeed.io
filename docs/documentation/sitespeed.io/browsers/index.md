@@ -19,10 +19,10 @@ twitterdescription: You can use Firefox, Safari, Chrome, Edge and Chrome/Firefox
 You can fetch timings, run your own JavaScript and record a video of the screen. The following browsers are supported: Firefox, Safari, Edge, Chrome, Chrome and Firefox on Android and Safari on iOS. If you run our Docker containers, we always update them when we tested the latest stable release of Chrome and Firefox. Safari and Safari on iOS needs Mac OS X Catalina. Edge need the corresponding MSEdgeDriver.
 
 ## Firefox
-The latest version of Firefox should work out of the box.
+The latest version of Firefox should work out of the box except if you are on Linux and run Snap installed Firefox, then you need to [follow the workaround](https://github.com/mozilla/geckodriver/releases/tag/v0.31.0) by setting a TMPDIR that Geckodriver and Firefox will use. 
 
 ### Firefox profile setup
-At the moment we setup a new profile for each run the browser do. We set up the profiles preferences like [this](https://github.com/sitespeedio/browsertime/blob/main/lib/firefox/webdriver/firefoxPreferences.js). We use Mozillas [own configuration](https://searchfox.org/mozilla-central/source/testing/talos/talos/config.py) as default with some changes + some extra configuration for performance and privacy.
+At the moment we setup a new profile for each run the browser do. We set up the profiles preferences like [this](https://github.com/sitespeedio/browsertime/blob/main/lib/firefox/settings/firefoxPreferences.js). We use Mozillas [own configuration](https://searchfox.org/mozilla-central/source/testing/talos/talos/config.py) as default with some changes + some extra configuration for performance and privacy.
 
 We try to disable all Firefox ping home:
  * We disable [heartbeat](https://wiki.mozilla.org/Firefox/Shield/Heartbeat).
@@ -213,9 +213,9 @@ sitespeed.io --chrome.binaryPath "/Applications/Brave Browser.app/Contents/MacOS
 ~~~
 
 ## Choose when to end your test
-By default the browser will collect data until  [window.performance.timing.loadEventEnd happens + 2 seconds more](https://github.com/sitespeedio/browsertime/blob/d68261e554470f7b9df28797502f5edac3ace2e3/lib/core/seleniumRunner.js#L15). That is perfectly fine for most sites, but if you do Ajax loading and you mark them with user timings, you probably want to include them in your test. Do that by changing the script that will end the test (```--browsertime.pageCompleteCheck```). When the scripts returns true the browser will close or if the timeout time is reached.
+By default sitespeed.io will use JavaScript to decide when to end the test. The script will run inside the browser and it will stop the test two seconds after the *window.performance.timing.loadEventEnd* has happened. You can also define your own JavaScript that decides when to end the test or use the `--pageCompleteCheckNetworkIdle` switch that stops the tests after 5 seconds of silence on the network.
 
-In this example we wait 10 seconds until the loadEventEnd happens, but you can also choose to trigger it at a specific event.
+Here is an example how you can create your own script, in the example we wait 10 seconds until the loadEventEnd happens, but you can also choose to trigger it at a specific event.
 
 ~~~bash
 docker run --rm -v "$(pwd):/sitespeed.io" sitespeedio/sitespeed.io:{% include version/sitespeed.io.txt %} https://www.sitespeed.io --browsertime.pageCompleteCheck 'return (function() {try { return (Date.now() - window.performance.timing.loadEventEnd) > 10000;} catch(e) {} return true;})()'
@@ -228,8 +228,8 @@ You can also configure how long time your current check will wait until completi
 ![Navigation timeline]({{site.baseurl}}/img/navigation-timeline.jpg)
 {: .img-thumbnail}
 
-You can also choose to end the test after 5 seconds of inactivity that happens after loadEventEnd. Do that by adding
-```--browsertime.pageCompleteCheckInactivity``` to your run. The test will then wait for loadEventEnd to happen and no requests in the Resource Timing API the last 5 seconds. Be-aware though that the script will empty the resource timing API data for every check so if you have your own script collecting data using the Resource Timing API it will fail.
+You can also choose to end the test after 5 seconds of inactivity on the newtork. Do that by adding
+```--pageCompleteCheckNetworkIdle``` to your run. The test will then wait for no traffic in the network log for 5 seconds straight and then end the test.
 
 There's is also another alternative: use ```--spa``` to automatically wait for 5 seconds of inactivity in the Resource Timing API (independently if the load event end has fired or not). If you need to wait longer, use ```--pageCompleteWaitTime```.
 
