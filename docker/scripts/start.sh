@@ -15,6 +15,9 @@ if [[ `which microsoft-edge` ]]; then
    microsoft-edge --version
 fi
 
+ARCH="$(uname -m)"
+echo "Architecture: $ARCH"
+
 BROWSERTIME=/usr/src/app/bin/browsertimeWebPageReplay.js
 SITESPEEDIO=/usr/src/app/bin/sitespeed.js
 export DBUS_SESSION_BUS_ADDRESS=/dev/null
@@ -89,7 +92,7 @@ function runWebPageReplay() {
   record_pid=$!
   sleep $RECORD_WAIT
 
-  execNode $BROWSERTIME --browsertime.chrome.webPageReplayHostResolver --browsertime.chrome.webPageReplayHTTPPort $WPR_HTTP_PORT --browsertime.chrome.webPageReplayHTTPSPort $WPR_HTTPS_PORT --browsertime.chrome.webPageReplayRecord true --browsertime.firefox.preference network.dns.forceResolve:127.0.0.1 --browsertime.connectivity.engine throttle --browsertime.connectivity.throttle.localhost --browsertime.connectivity.profile custom --browsertime.connectivity.latency $LATENCY "$@"
+  execNode $BROWSERTIME --browsertime.chrome.webPageReplayHostResolver --browsertime.chrome.webPageReplayHTTPPort $WPR_HTTP_PORT --browsertime.chrome.webPageReplayHTTPSPort $WPR_HTTPS_PORT --browsertime.chrome.webPageReplayRecord true --browsertime.firefox.preference network.dns.forceResolve:127.0.0.1 --browsertime.firefox.acceptInsecureCerts true --browsertime.connectivity.engine throttle --browsertime.connectivity.throttle.localhost --browsertime.connectivity.profile custom --browsertime.connectivity.latency $LATENCY "$@"
   RESULT+=$?
 
   kill -2 $record_pid
@@ -105,7 +108,7 @@ function runWebPageReplay() {
 
       if [ $? -eq 0 ]
         then
-          execNode --max-old-space-size=$MAX_OLD_SPACE_SIZE $SITESPEEDIO --browsertime.firefox.preference security.OCSP.enabled:0 --browsertime.firefox.preference network.dns.forceResolve:127.0.0.1 --browsertime.chrome.webPageReplayHostResolver --browsertime.chrome.webPageReplayHTTPPort $WPR_HTTP_PORT --browsertime.chrome.webPageReplayHTTPSPort $WPR_HTTPS_PORT --browsertime.connectivity.engine throttle --browsertime.connectivity.throttle.localhost --replay --browsertime.connectivity.profile custom --browsertime.connectivity.rtt $LATENCY "$@" &
+          execNode --max-old-space-size=$MAX_OLD_SPACE_SIZE $SITESPEEDIO --browsertime.firefox.preference security.OCSP.enabled:0 --browsertime.firefox.acceptInsecureCerts true --browsertime.firefox.preference network.dns.forceResolve:127.0.0.1 --browsertime.chrome.webPageReplayHostResolver --browsertime.chrome.webPageReplayHTTPPort $WPR_HTTP_PORT --browsertime.chrome.webPageReplayHTTPSPort $WPR_HTTPS_PORT --browsertime.connectivity.engine throttle --browsertime.connectivity.throttle.localhost --replay --browsertime.connectivity.profile custom --browsertime.connectivity.rtt $LATENCY "$@" &
 
           PID=$!
           

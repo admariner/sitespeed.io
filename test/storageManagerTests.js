@@ -1,9 +1,9 @@
-'use strict';
+import path from 'node:path';
 
-const resultsStorage = require('../lib/core/resultsStorage');
-const dayjs = require('dayjs');
-const path = require('path');
-const test = require('ava');
+import dayjs from 'dayjs';
+import test from 'ava';
+
+import { resultsStorage } from '../lib/core/resultsStorage/index.js';
 
 const timestamp = dayjs();
 const timestampString = timestamp.format('YYYY-MM-DD-HH-mm-ss');

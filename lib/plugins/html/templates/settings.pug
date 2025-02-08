@@ -26,11 +26,15 @@ block content
         tr 
           td Emulated mobile
           td Yes
+      if hostname
+         tr
+          td Hostname
+          td #{hostname}
       if cpuBenchmark
         tr
           td CPU benchmark
           td #{cpuBenchmark} (first run)
-      if options.replay
+      if options.replay || options.webpagereplay
         tr
           td Using WebPageReplay 
           td Yes
@@ -56,6 +60,26 @@ block content
       tr 
         td Number of runs
         td #{get(options, 'browsertime.iterations')}
+      if get(browser, 'traceCategories') !== undefined
+        tr
+          td Trace categories
+          td #{get(browser, 'traceCategories')}
+      if get(options, 'browsertime.enableProfileRun') !== undefined
+        tr 
+          td Enabled profile run
+          td Yes
+      if get(browser, 'preference') !== undefined
+        tr
+          td browser.preference
+          td #{get(browser, 'preference')}
+      if get(browser, 'args') !== undefined
+        tr
+          td browser.args
+          td #{get(browser, 'args')}
+      if get(browser, 'geckoProfilerFeatures') !== undefined
+        tr
+          td Gecko Profiler Features
+          td #{get(browser, 'geckoProfilerFeatures')}
       tr 
         td OS
         td #{android ? 'Android' : (ios ? 'iOS' :  (options.browsertime.docker ? 'Docker using ' + os: os)) }
@@ -64,6 +88,10 @@ block content
           tr 
             td Phone model
             td #{android.model}
+        if android.id
+          tr
+            td Id
+            td #{android.id}
         if android.androidVersion
           tr 
             td Android version
@@ -72,6 +100,12 @@ block content
           tr 
             td Wifi
             td #{android.wifi}
+        tr
+          td Using gnirehtet
+          td #{get(options, 'browsertime.android.gnirehtet', 'No')}
+        tr
+          td Rooted phone
+          td #{get(options, 'browsertime.android.rooted', 'No')}
         if android.batteryTemperature
           tr 
             td Battery temperature

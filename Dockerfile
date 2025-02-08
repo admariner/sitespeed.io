@@ -1,9 +1,10 @@
-FROM sitespeedio/webbrowsers:chrome-108.0-firefox-108.0-edge-108.0
+FROM sitespeedio/webbrowsers:chrome-133.0-firefox-135.0-edge-132.0
 
 ARG TARGETPLATFORM=linux/amd64
 
-ENV SITESPEED_IO_BROWSERTIME__XVFB true
-ENV SITESPEED_IO_BROWSERTIME__DOCKER true
+ENV SITESPEED_IO_BROWSERTIME__XVFB=true
+ENV SITESPEED_IO_BROWSERTIME__DOCKER=true
+ENV PYTHON=python3
 
 COPY docker/webpagereplay/$TARGETPLATFORM/wpr /usr/local/bin/
 COPY docker/webpagereplay/wpr_cert.pem /webpagereplay/certs/
@@ -11,8 +12,7 @@ COPY docker/webpagereplay/wpr_key.pem /webpagereplay/certs/
 COPY docker/webpagereplay/deterministic.js /webpagereplay/scripts/deterministic.js
 COPY docker/webpagereplay/LICENSE /webpagereplay/
 
-
-RUN sudo apt-get update && sudo apt-get install libnss3-tools python2 \
+RUN sudo apt-get update && sudo apt-get install libnss3-tools \
     net-tools \
     build-essential \
     iproute2 -y && \
@@ -28,8 +28,12 @@ WORKDIR /usr/src/app
 
 COPY package.json /usr/src/app/
 COPY npm-shrinkwrap.json /usr/src/app/
-RUN npm install --production && npm cache clean --force
-COPY . /usr/src/app
+COPY tools/postinstall.js /usr/src/app/tools/postinstall.js
+RUN npm install --production && npm cache clean --force 
+
+COPY ./bin/ /usr/src/app/bin/
+COPY ./lib/ /usr/src/app/lib/
+RUN rm -fR /usr/src/app/node_modules/selenium-webdriver/bin
 
 COPY docker/scripts/start.sh /start.sh
 
@@ -44,4 +48,6 @@ RUN echo 'ALL ALL=NOPASSWD: /usr/sbin/tc, /usr/sbin/route, /usr/sbin/ip' > /etc/
 
 ENTRYPOINT ["/start.sh"]
 VOLUME /sitespeed.io
+VOLUME /baseline
+
 WORKDIR /sitespeed.io
